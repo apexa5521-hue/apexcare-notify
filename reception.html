@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEXCARE — الاستقبال</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tajawal', sans-serif; background: #0C447C; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+  .card { background: #fff; border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 420px; text-align: center; }
+  .logo { font-size: 13px; font-weight: 700; color: #888; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  h1 { font-size: 24px; font-weight: 900; color: #0C447C; margin-bottom: 4px; }
+  .sub { font-size: 14px; color: #888; margin-bottom: 32px; }
+  .field-label { font-size: 13px; font-weight: 700; color: #444; text-align: right; margin-bottom: 8px; }
+  input[type=text] { width: 100%; padding: 16px; font-size: 28px; font-weight: 900; font-family: 'Tajawal', sans-serif; text-align: center; border: 2px solid #ddd; border-radius: 12px; outline: none; letter-spacing: 0.06em; color: #0C447C; transition: border 0.2s; margin-bottom: 20px; }
+  input[type=text]:focus { border-color: #0C447C; }
+  input[type=text]::placeholder { color: #ccc; font-size: 18px; font-weight: 400; letter-spacing: 0; }
+  .send-btn { width: 100%; padding: 18px; background: #0C447C; color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; font-family: 'Tajawal', sans-serif; cursor: pointer; transition: background 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .send-btn:hover { background: #185FA5; }
+  .send-btn:active { transform: scale(0.98); }
+  .send-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; }
+  .feedback { margin-top: 16px; font-size: 15px; font-weight: 700; color: #1D9E75; min-height: 24px; }
+  hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+  .history-title { font-size: 12px; font-weight: 700; color: #aaa; letter-spacing: 0.08em; text-align: right; margin-bottom: 10px; }
+  .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #F5F8FC; border-radius: 10px; margin-bottom: 8px; font-size: 14px; }
+  .history-file { font-weight: 900; color: #0C447C; font-size: 16px; }
+  .history-time { color: #888; font-size: 12px; }
+  .empty-history { text-align: center; color: #ccc; font-size: 13px; padding: 10px 0; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">APEXCARE</div>
+  <h1>شاشة الاستقبال</h1>
+  <p class="sub">إشعار وصول مريض جديد — زيارة أولى</p>
+  <div class="field-label">رقم ملف المريض</div>
+  <input type="text" id="fileInput" inputmode="numeric" placeholder="أدخل رقم الملف" maxlength="10" />
+  <button class="send-btn" id="sendBtn" onclick="sendAlert()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+    إشعار فريق التمريض
+  </button>
+  <div class="feedback" id="feedback"></div>
+  <hr>
+  <div class="history-title">آخر الإشعارات المرسلة</div>
+  <div id="historyList"><div class="empty-history">لا يوجد بعد</div></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const SECRET = "APEXCARE-2026-NOTIFY";
+
+  const app = initializeApp({
+    apiKey: "AIzaSyAaSYXo1GkTky85f-o4uWa6kIEXeIMTRKU",
+    authDomain: "apexcare-notify.firebaseapp.com",
+    databaseURL: "https://apexcare-notify-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "apexcare-notify",
+    storageBucket: "apexcare-notify.firebasestorage.app",
+    messagingSenderId: "813273136468",
+    appId: "1:813273136468:web:a11adc6ef51efcb0749cc1"
+  });
+  const db = getDatabase(app);
+
+  const fileInput = document.getElementById('fileInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const feedback = document.getElementById('feedback');
+  const historyList = document.getElementById('historyList');
+  let history = [];
+
+  fileInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAlert(); });
+
+  window.sendAlert = function() {
+    const fileNum = fileInput.value.trim();
+    if (!fileNum) { fileInput.focus(); return; }
+    sendBtn.disabled = true;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    push(ref(db, 'notifications'), {
+      fileNumber: fileNum,
+      time: timeStr,
+      timestamp: now.getTime(),
+      status: 'pending',
+      secret: SECRET
+    }).then(() => {
+      feedback.style.color = '#1D9E75';
+      feedback.textContent = 'تم إرسال الإشعار بنجاح ✓';
+      addHistory(fileNum, timeStr);
+      fileInput.value = '';
+      setTimeout(() => { feedback.textContent = ''; sendBtn.disabled = false; }, 2500);
+    }).catch(() => {
+      feedback.style.color = '#E24B4A';
+      feedback.textContent = 'فشل الإرسال — تحقق من الاتصال';
+      sendBtn.disabled = false;
+    });
+  };
+
+  function addHistory(file, time) {
+    history.unshift({ file, time });
+    if (history.length > 5) history.pop();
+    historyList.innerHTML = history.map(h =>
+      `<div class="history-item"><span class="history-file">${h.file}</span><span class="history-time">${h.time}</span></div>`
+    ).join('');
+  }
+</script>
+</body>
+</html>
