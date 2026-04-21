@@ -11,13 +11,25 @@
   .header { width: 100%; max-width: 460px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .header-logo { font-size: 12px; font-weight: 700; color: #888; letter-spacing: 0.1em; }
   .header-title { font-size: 18px; font-weight: 900; color: #0C447C; }
-  .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #1D9E75; display: inline-block; margin-left: 6px; animation: blink 2s ease-in-out infinite; }
+  .status-row { display: flex; gap: 8px; align-items: center; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #1D9E75; display: inline-block; animation: blink 2s ease-in-out infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .status-label { font-size: 12px; color: #1D9E75; font-weight: 700; }
+  .wake-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 700; background: #E1F5EE; color: #085041; }
+  .wake-badge.off { background: #FFF3CD; color: #633806; }
+
+  .perm-banner { width: 100%; max-width: 460px; background: #FFF3CD; border: 1px solid #EF9F27; border-radius: 14px; padding: 14px 18px; margin-bottom: 16px; display: none; }
+  .perm-banner.show { display: block; }
+  .perm-title { font-size: 14px; font-weight: 700; color: #633806; margin-bottom: 6px; }
+  .perm-desc { font-size: 13px; color: #854F0B; margin-bottom: 12px; line-height: 1.6; }
+  .perm-btn { padding: 10px 20px; background: #EF9F27; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: 'Tajawal', sans-serif; cursor: pointer; }
+
   .waiting-card { background: #fff; border-radius: 20px; border: 2px dashed #ddd; padding: 48px 32px; width: 100%; max-width: 460px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .waiting-icon { width: 56px; height: 56px; border-radius: 50%; background: #F0F4F8; display: flex; align-items: center; justify-content: center; }
   .waiting-icon svg { width: 28px; height: 28px; fill: #bbb; }
   .waiting-text { font-size: 16px; color: #aaa; font-weight: 500; }
+  .waiting-sub { font-size: 12px; color: #ccc; }
+
   .alert-card { background: #fff; border-radius: 20px; border: 3px solid #1D9E75; width: 100%; max-width: 460px; overflow: hidden; display: none; animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1); }
   .alert-card.visible { display: block; }
   @keyframes popIn { 0%{transform:scale(0.8) translateY(20px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
@@ -31,9 +43,9 @@
   .file-label { font-size: 13px; color: #888; font-weight: 500; margin-bottom: 6px; }
   .file-number { font-size: 52px; font-weight: 900; color: #0C447C; letter-spacing: 0.04em; line-height: 1; margin-bottom: 8px; }
   .alert-time { font-size: 13px; color: #aaa; margin-bottom: 24px; }
-  .dismiss-btn { width: 100%; padding: 16px; background: #0C447C; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; font-family: 'Tajawal', sans-serif; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+  .dismiss-btn { width: 100%; padding: 16px; background: #0C447C; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; font-family: 'Tajawal', sans-serif; cursor: pointer; transition: background 0.15s; }
   .dismiss-btn:hover { background: #185FA5; }
-  .dismiss-btn:active { transform: scale(0.98); }
+
   .pulse-wrap { position: relative; width: 56px; height: 56px; display: none; align-items: center; justify-content: center; margin: 0 auto 16px; }
   .pulse-wrap.active { display: flex; }
   .pulse-ring { position: absolute; width: 56px; height: 56px; border-radius: 50%; border: 3px solid #1D9E75; animation: pulseOut 1.4s ease-out infinite; opacity: 0; }
@@ -41,6 +53,7 @@
   @keyframes pulseOut { 0%{transform:scale(0.9);opacity:0.8} 100%{transform:scale(2.2);opacity:0} }
   .pulse-center { width: 56px; height: 56px; border-radius: 50%; background: #1D9E75; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
   .pulse-center svg { width: 28px; height: 28px; fill: #fff; }
+
   .history-section { width: 100%; max-width: 460px; margin-top: 20px; }
   .history-title { font-size: 12px; font-weight: 700; color: #aaa; letter-spacing: 0.08em; margin-bottom: 10px; }
   .history-item { background: #fff; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -58,10 +71,17 @@
     <div class="header-logo">APEXCARE</div>
     <div class="header-title">شاشة التمريض</div>
   </div>
-  <div style="text-align:left">
+  <div class="status-row">
     <span class="status-dot"></span>
     <span class="status-label">متصل</span>
+    <span class="wake-badge off" id="wakeBadge">الشاشة غير محمية</span>
   </div>
+</div>
+
+<div class="perm-banner" id="permBanner">
+  <div class="perm-title">فعّل الإشعارات للتنبيه حتى لو الشاشة مقفلة</div>
+  <div class="perm-desc">اضغط الزر أدناه لتفعيل إشعارات المتصفح — ستظهر تنبيهات حتى لو الجوال في وضع السكون</div>
+  <button class="perm-btn" onclick="requestNotifPermission()">تفعيل الإشعارات</button>
 </div>
 
 <div class="pulse-wrap" id="pulseWrap">
@@ -77,6 +97,7 @@
     <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
   </div>
   <div class="waiting-text">في انتظار إشعار من الاستقبال</div>
+  <div class="waiting-sub">الصفحة تراقب تلقائياً</div>
 </div>
 
 <div class="alert-card" id="alertCard">
@@ -104,9 +125,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onChildAdded, update, query, orderByChild, limitToLast, equalTo } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  const SECRET = "APEXCARE-2026-NOTIFY";
+  import { getDatabase, ref, onChildAdded, update, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const app = initializeApp({
     apiKey: "AIzaSyAaSYXo1GkTky85f-o4uWa6kIEXeIMTRKU",
@@ -115,20 +134,63 @@
     projectId: "apexcare-notify",
     storageBucket: "apexcare-notify.firebasestorage.app",
     messagingSenderId: "813273136468",
-    appId: "1:813273136448:web:a11adc6ef51efcb0749cc1"
+    appId: "1:813273136468:web:a11adc6ef51efcb0749cc1"
   });
   const db = getDatabase(app);
-
-  const waitingCard = document.getElementById('waitingCard');
-  const alertCard = document.getElementById('alertCard');
-  const alertFileNum = document.getElementById('alertFileNum');
-  const alertTime = document.getElementById('alertTime');
-  const pulseWrap = document.getElementById('pulseWrap');
-  const historyList = document.getElementById('historyList');
 
   let currentKey = null;
   let historyItems = [];
   let isFirstLoad = true;
+  let wakeLock = null;
+
+  const wakeBadge = document.getElementById('wakeBadge');
+  const permBanner = document.getElementById('permBanner');
+
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeBadge.textContent = 'الشاشة محمية';
+      wakeBadge.classList.remove('off');
+      document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+          try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeBadge.textContent = 'الشاشة محمية';
+            wakeBadge.classList.remove('off');
+          } catch(e){}
+        }
+      });
+    } catch(e) {
+      wakeBadge.textContent = 'الشاشة غير محمية';
+      wakeBadge.classList.add('off');
+    }
+  }
+
+  function checkNotifPermission() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      permBanner.classList.add('show');
+    }
+  }
+
+  window.requestNotifPermission = async function() {
+    const result = await Notification.requestPermission();
+    if (result === 'granted') {
+      permBanner.classList.remove('show');
+    }
+  };
+
+  function sendBrowserNotif(fileNum) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    new Notification('مريض جديد — APEXCARE', {
+      body: 'رقم الملف: ' + fileNum + ' | زيارة أولى',
+      icon: 'https://apexa5521-hue.github.io/apexcare-notify/icon.png',
+      requireInteraction: true,
+      dir: 'rtl',
+      lang: 'ar'
+    });
+  }
 
   const beep = () => {
     try {
@@ -146,10 +208,8 @@
   };
 
   const q = query(ref(db, 'notifications'), orderByChild('timestamp'), limitToLast(20));
-
   onChildAdded(q, (snapshot) => {
     const data = snapshot.val();
-    if (data.secret !== SECRET) return;
     const key = snapshot.key;
     if (isFirstLoad) {
       addToHistory(data, key, false);
@@ -163,20 +223,21 @@
 
   function showAlert(data, key) {
     currentKey = key;
-    alertFileNum.textContent = data.fileNumber;
-    alertTime.textContent = 'وصل الساعة ' + data.time;
-    waitingCard.style.display = 'none';
-    pulseWrap.classList.add('active');
-    alertCard.classList.add('visible');
+    document.getElementById('alertFileNum').textContent = data.fileNumber;
+    document.getElementById('alertTime').textContent = 'وصل الساعة ' + data.time;
+    document.getElementById('waitingCard').style.display = 'none';
+    document.getElementById('pulseWrap').classList.add('active');
+    document.getElementById('alertCard').classList.add('visible');
     beep();
-    if ('vibrate' in navigator) navigator.vibrate([300,100,300,100,500]);
+    sendBrowserNotif(data.fileNumber);
+    if ('vibrate' in navigator) navigator.vibrate([400,100,400,100,600]);
   }
 
   window.dismissAlert = function() {
     if (currentKey) update(ref(db, 'notifications/' + currentKey), { status: 'done' });
-    alertCard.classList.remove('visible');
-    pulseWrap.classList.remove('active');
-    waitingCard.style.display = '';
+    document.getElementById('alertCard').classList.remove('visible');
+    document.getElementById('pulseWrap').classList.remove('active');
+    document.getElementById('waitingCard').style.display = '';
     currentKey = null;
     renderHistory();
   };
@@ -189,7 +250,7 @@
   }
 
   function renderHistory() {
-    historyList.innerHTML = historyItems.map(h =>
+    document.getElementById('historyList').innerHTML = historyItems.map(h =>
       `<div class="history-item">
         <span class="h-file">${h.file}</span>
         <span class="h-time">${h.time}</span>
@@ -197,6 +258,9 @@
       </div>`
     ).join('');
   }
+
+  requestWakeLock();
+  checkNotifPermission();
 </script>
 </body>
 </html>
